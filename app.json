@@ -1,0 +1,52 @@
+{
+  "name": "Forward Bot",
+  "description": "ɪ ᴄᴀɴ ᴏɴʟʏ ғᴏʀᴡᴀʀᴅ ᴅᴏᴄᴜᴍᴇɴᴛ ᴀɴᴅ ᴠɪᴅᴇᴏ (ᴍᴘ𝟺 ᴀɴᴅ ᴍᴋᴠ) ғɪʟᴇs. ғᴏʀᴡᴀʀᴅ ʏᴏᴜʀ sᴏᴜʀᴄᴇ ᴄʜᴀɴɴᴇʟ ᴍᴇssᴀɢᴇ ᴛᴏ ᴛʜɪs ʙᴏᴛ. ɪғ sᴏᴜʀᴄᴇ ᴄʜᴀɴɴᴇʟ ɪs ғᴏʀᴡᴀʀᴅ ʀᴇsᴛʀɪᴄᴛᴇᴅ ʟᴀsᴛ ᴍᴇssᴀɢᴇ ʟɪɴᴋ sᴇɴᴅ ᴛᴏ ᴛʜɪs ʙᴏᴛ.",
+  "keywords": [
+    "telegram",
+    "forward",
+    "okforward"
+  ],
+  "repository": "https://github.com/neelshah55/ForwardBot",
+  "logo": "https://ibb.co/kMVxrCj",
+  "env": {
+    "API_HASH": {
+      "description": "Your API HASH from my.telegram.org",
+      "value": ""
+    },
+    "API_ID": {
+      "description": "Your API ID from my.telegram.org",
+      "value": ""
+    },
+    "TG_BOT_TOKEN":{
+      "description": "Your bot token from @BotFather",
+      "value": ""
+    },
+    "OWNER_ID": {
+      "description": "Must enter Your Telegram Id from @my_id_bot",
+      "value": ""
+    },
+    "UPDATES_CHANNEL":{
+      "description": "Must enter Your Updates Channel Telegram Link",
+      "value": "https://t.me/"
+    },
+    "SUPPORT_GROUP ":{
+      "description": "Must enter Your SUPPORT GROUP Telegram Link",
+      "value": "https://t.me/"
+    },
+    "DEV_LINK":{
+      "description": "Must enter Your CONATCT BOT Telegram Link",
+      "value": "https://t.me/"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  }
+}
