@@ -1,5 +1,3 @@
-"""(c) @Hansaka_Anuhas"""
-
 import asyncio
 import re
 import logging
@@ -9,7 +7,6 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from info import FILE_CAPTION
 logger = logging.getLogger(__name__)
 
-# Setup database yourself. If you need setup database contact @Hansaka_Anuhas for paid edits
 CURRENT = {}
 CHANNEL = {}
 CANCEL = {}
