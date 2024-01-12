@@ -11,31 +11,31 @@
   "env": {
     "API_HASH": {
       "description": "Your API HASH from my.telegram.org",
-      "value": ""
+      "required": true
     },
     "API_ID": {
       "description": "Your API ID from my.telegram.org",
-      "value": ""
+      "required": true
     },
     "TG_BOT_TOKEN":{
       "description": "Your bot token from @BotFather",
-      "value": ""
+      "required": true
     },
     "OWNER_ID": {
       "description": "Must enter Your Telegram Id from @my_id_bot",
-      "value": ""
+      "required": true
     },
     "UPDATES_CHANNEL":{
       "description": "Must enter Your Updates Channel Telegram Link",
-      "value": "https://t.me/"
+      "required": false
     },
     "SUPPORT_GROUP ":{
       "description": "Must enter Your SUPPORT GROUP Telegram Link",
-      "value": "https://t.me/"
+      "required": false
     },
     "DEV_LINK":{
       "description": "Must enter Your CONATCT BOT Telegram Link",
-      "value": "https://t.me/"
+      "required": false
     }
   },
   "buildpacks": [
