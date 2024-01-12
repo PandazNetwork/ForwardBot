@@ -17,7 +17,7 @@
       "description": "Your API ID from my.telegram.org",
       "required": true
     },
-    "TG_BOT_TOKEN":{
+    "BOT_TOKEN":{
       "description": "Your bot token from @BotFather",
       "required": true
     },
