@@ -7,15 +7,21 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from info import FILE_CAPTION
 logger = logging.getLogger(__name__)
 
+CURRENT = {}
+CHANNEL = {}
+CANCEL = {}
+FORWARDING = {}
+CAPTION = {}
+
 @Client.on_callback_query(filters.regex(r'^forward'))
 async def forward(bot, query):
     _, ident, chat, lst_msg_id = query.data.split("#")
     if ident == 'yes':
         if FORWARDING.get(query.from_user.id):
-            return await query.answer('ᴡᴀɪᴛ ᴜɴᴛɪʟ ᴘʀᴇᴠɪᴏᴜs ᴘʀᴏᴄᴇss ᴄᴏᴍᴘʟᴇᴛᴇ.', show_alert=True)
+            return await query.answer('Wait until previous process complete.', show_alert=True)
 
         msg = query.message
-        await msg.edit('ғᴏʀᴡᴀʀᴅɪɴɢ sᴛᴀʀᴛᴇᴅ...')
+        await msg.edit('Starting Forwarding...')
         try:
             chat = int(chat)
         except:
@@ -27,7 +33,7 @@ async def forward(bot, query):
         await query.message.delete()
 
     elif ident == 'cancel':
-        await query.message.edit("sᴛᴏᴘᴘɪɴɢ ғᴏʀᴡᴀʀᴅ ᴛᴀsᴋ...")
+        await query.message.edit("Trying to cancel forwarding...")
         CANCEL[query.from_user.id] = True
 
 
@@ -37,7 +43,7 @@ async def send_for_forward(bot, message):
         regex = re.compile("(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?(\d+|[a-zA-Z_0-9]+)/(\d+)$")
         match = regex.match(message.text)
         if not match:
-            return await message.reply('ᴘʟᴇᴀsᴇ ᴀᴅᴅ ᴠᴀʟɪᴅ ʟɪɴᴋ ᴛᴏ sᴛᴀʀᴛ ғᴏʀᴡᴀᴅɪɴɢ...')
+            return await message.reply('Invalid link for forward!')
         chat_id = match.group(4)
         last_msg_id = int(match.group(5))
         if chat_id.isnumeric():
@@ -58,7 +64,7 @@ async def send_for_forward(bot, message):
 
     target_chat_id = CHANNEL.get(message.from_user.id)
     if not target_chat_id:
-        return await message.reply("ᴛᴀʀɢᴇᴛ ᴄʜᴀɴɴᴇʟ ɴᴏᴛ ғᴏᴜɴᴅ.\nᴀᴅᴅ ᴜsɪɴɢ /set_channel ᴄᴏᴍᴍᴀɴᴅ.\nғᴏʀ ᴇxᴀᴍᴘʟᴇ - /set_channel -100xxxxxxxxx")
+        return await message.reply("You not added target channel.\nAdd using /set_channel command.")
 
     try:
         target_chat = await bot.get_chat(target_chat_id)
@@ -82,7 +88,7 @@ async def send_for_forward(bot, message):
     ],[
         InlineKeyboardButton('CLOSE', callback_data=f'forward#close#{chat_id}#{last_msg_id}')
     ]]
-    await message.reply(f"• sᴏᴜʀᴄᴇ ᴄʜᴀɴɴᴇʟ: {source_chat.title}\n• ᴛᴀʀɢᴇᴛ ᴄʜᴀɴɴᴇʟ: {target_chat.title}\n• sᴋɪᴘ ᴍᴇssᴀɢᴇs: <code>{skip}</code>\n• ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: <code>{last_msg_id}</code>\n• ғɪʟᴇ ᴄᴀᴘᴛɪᴏɴ: {caption}\n\nᴅᴏ ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ғᴏʀᴡᴀʀᴅ?", reply_markup=InlineKeyboardMarkup(buttons))
+    await message.reply(f"Source Channel: {source_chat.title}\nTarget Channel: {target_chat.title}\nSkip messages: <code>{skip}</code>\nTotal Messages: <code>{last_msg_id}</code>\nFile Caption: {caption}\n\nDo you want to forward?", reply_markup=InlineKeyboardMarkup(buttons))
 
 
 @Client.on_message(filters.private & filters.command(['set_skip']))
@@ -90,11 +96,11 @@ async def set_skip_number(bot, message):
     try:
         _, skip = message.text.split(" ")
     except:
-        return await message.reply("/set_skip 4xxx")
+        return await message.reply("Give me a skip number.")
     try:
         skip = int(skip)
     except:
-        return await message.reply("ᴏɴʟʏ sᴜᴘᴘᴏʀᴛ ɪɴ ɴᴜᴍʙᴇʀs.")
+        return await message.reply("Only support in numbers.")
     CURRENT[message.from_user.id] = int(skip)
     await message.reply(f"Successfully set <code>{skip}</code> skip number.")
 
@@ -104,18 +110,18 @@ async def set_target_channel(bot, message):
     try:
         _, chat_id = message.text.split(" ")
     except:
-        return await message.reply("/set_channel -100xxxxxxxx")
+        return await message.reply("Give me a target channel ID")
     try:
         chat_id = int(chat_id)
     except:
-        return await message.reply("ɪᴅ ɴᴏᴛ ᴠᴀʟɪᴅ")
+        return await message.reply("Give me a valid ID")
 
     try:
         chat = await bot.get_chat(chat_id)
     except:
-        return await message.reply("ʙᴏᴛ ɪs ɴᴏᴛ ᴀᴅᴍɪɴ ɪɴ ᴛᴀʀɢᴇᴛ ᴄʜᴀɴɴᴇʟ")
+        return await message.reply("Make me a admin in your target channel.")
     if chat.type != enums.ChatType.CHANNEL:
-        return await message.reply("ᴏɴʟʏ ᴄʜᴀɴɴᴇʟs ᴀʟʟᴏᴡᴇᴅ")
+        return await message.reply("I can set channels only.")
     CHANNEL[message.from_user.id] = int(chat.id)
     await message.reply(f"Successfully set {chat.title} target channel.")
 
@@ -127,7 +133,7 @@ async def set_caption(bot, message):
     except:
         return await message.reply("Give me a caption.")
     CAPTION[message.from_user.id] = caption
-    await message.reply(f"ғɪʟᴇ ᴄᴀᴘᴛɪᴏɴ ᴜᴘᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ.\n\n{caption}")
+    await message.reply(f"Successfully set file caption.\n\n{caption}")
     
     
     
@@ -144,7 +150,7 @@ async def forward_files(lst_msg_id, chat, msg, bot, user_id):
     try:
         async for message in bot.iter_messages(chat, lst_msg_id, CURRENT.get(user_id) if CURRENT.get(user_id) else 0):
             if CANCEL.get(user_id):
-                await msg.edit(f"ғᴏʀᴡᴀʀᴅ ᴄᴀɴᴄᴇʟᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ...")
+                await msg.edit(f"Successfully Forward Canceled!")
                 break
             current += 1
             fetched += 1
@@ -152,7 +158,7 @@ async def forward_files(lst_msg_id, chat, msg, bot, user_id):
                 btn = [[
                     InlineKeyboardButton('CANCEL', callback_data=f'forward#cancel#{chat}#{lst_msg_id}')
                 ]]
-                await msg.edit_text(text=f"ғᴏʀᴡᴀʀᴅ ᴜɴᴅᴇʀ ᴘʀᴏᴄᴇss...\n\n• ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: <code>{lst_msg_id}</code>\n• ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍᴇssᴀɢᴇs: <code>{current} / {lst_msg_id}</code>\n• ғᴏʀᴡᴀʀᴅᴇᴅ ғɪʟᴇs: <code>{forwarded}</code>\n• ᴅᴇʟᴇᴛᴇᴅ ᴍᴇssᴀɢᴇs sᴋɪᴘᴘᴇᴅ: <code>{deleted}</code>\n• ᴜɴsᴜᴘᴘᴏʀᴛᴇᴅ ғɪʟᴇs sᴋɪᴘᴘᴇᴅ: <code>{unsupported}</code>", reply_markup=InlineKeyboardMarkup(btn))
+                await msg.edit_text(text=f"Forward Processing...\n\nTotal Messages: <code>{lst_msg_id}</code>\nCompleted Messages: <code>{current} / {lst_msg_id}</code>\nForwarded Files: <code>{forwarded}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nUnsupported Files Skipped: <code>{unsupported}</code>", reply_markup=InlineKeyboardMarkup(btn))
             if message.empty:
                 deleted += 1
                 continue
@@ -186,9 +192,9 @@ async def forward_files(lst_msg_id, chat, msg, bot, user_id):
             await asyncio.sleep(1)
     except Exception as e:
         logger.exception(e)
-        await msg.reply(f"ғᴏʀᴡᴀʀᴅ ᴄᴀɴᴄᴇʟᴇᴅ!\n\n⚠️ Error - {e}")
+        await msg.reply(f"Forward Canceled!\n\nError - {e}")
     else:
-        await msg.edit(f'ғᴏʀᴡᴀʀᴅ ᴄᴏᴍᴘʟᴇᴛᴇᴅ!\n\n• ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: <code>{lst_msg_id}</code>\n• ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍᴇssᴀɢᴇs: <code>{current} / {lst_msg_id}</code>\n• ғᴇᴛᴄʜᴇᴅ ᴍᴇssᴀɢᴇs: <code>{fetched}</code>\n• ᴛᴏᴛᴀʟ ғᴏʀᴡᴀʀᴅᴇᴅ ғɪʟᴇs: <code>{forwarded}</code>\n• ᴅᴇʟᴇᴛᴇᴅ ᴍᴇssᴀɢᴇs sᴋɪᴘᴘᴇᴅ: <code>{deleted}</code>\n• ᴜɴsᴜᴘᴘᴏʀᴛᴇᴅ ғɪʟᴇs sᴋɪᴘᴘᴇᴅ: <code>{unsupported}</code>')
+        await msg.edit(f'Forward Completed!\n\nTotal Messages: <code>{lst_msg_id}</code>\nCompleted Messages: <code>{current} / {lst_msg_id}</code>\nFetched Messages: <code>{fetched}</code>\nTotal Forwarded Files: <code>{forwarded}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nUnsupported Files Skipped: <code>{unsupported}</code>')
         FORWARDING[user_id] = False
 
 
