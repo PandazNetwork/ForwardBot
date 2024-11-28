@@ -12,9 +12,9 @@
 ```
 /start - To check bot is alive or not
 /id - Get ID od group or channel
-/set_skip - Set skip number of message.
-/set_channel - Set target channel.
-/set_caption - Set file caption.
+/skip - Set skip number of message.
+/set - Set target channel.
+/caption - Set file caption.
 ```
 
 ### Variables
