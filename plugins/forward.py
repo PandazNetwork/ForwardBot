@@ -91,7 +91,7 @@ async def send_for_forward(bot, message):
     await message.reply(f"Source Channel: {source_chat.title}\nTarget Channel: {target_chat.title}\nSkip messages: <code>{skip}</code>\nTotal Messages: <code>{last_msg_id}</code>\nFile Caption: {caption}\n\nDo you want to forward?", reply_markup=InlineKeyboardMarkup(buttons))
 
 
-@Client.on_message(filters.private & filters.command(['set_skip']))
+@Client.on_message(filters.private & filters.command(['skip']))
 async def set_skip_number(bot, message):
     try:
         _, skip = message.text.split(" ")
@@ -105,7 +105,7 @@ async def set_skip_number(bot, message):
     await message.reply(f"Successfully set <code>{skip}</code> skip number.")
 
 
-@Client.on_message(filters.private & filters.command(['set_channel']))
+@Client.on_message(filters.private & filters.command(['set']))
 async def set_target_channel(bot, message):
     try:
         _, chat_id = message.text.split(" ")
@@ -126,7 +126,7 @@ async def set_target_channel(bot, message):
     await message.reply(f"Successfully set {chat.title} target channel.")
 
 
-@Client.on_message(filters.private & filters.command(['set_caption']))
+@Client.on_message(filters.private & filters.command(['caption']))
 async def set_caption(bot, message):
     try:
         caption = message.text.split(" ", 1)[1]
