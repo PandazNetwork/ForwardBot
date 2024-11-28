@@ -16,9 +16,9 @@ async def start(client, message):
 Forward your source channel message to this bot. If source channel is forward restricted last message link send to this bot.
 
 /id - Get ID
-/set_skip - Set skip message.
-/set_channel - Set target channel.
-/set_caption - Set file caption.
+/skip - Set skip message.
+/set - Set target channel.
+/caption - Set file caption.
 
 Caption formats:
 `{file_name}` - File name.
@@ -73,4 +73,4 @@ async def showid(client, message):
         )
 
     elif chat_type == enums.ChatType.CHANNEL:
-        await message.reply_text(f'★ Channel ID: <code>{message.chat.id}</code>')
+        await message.reply_text(f'ID: <code>{message.chat.id}</code>')
