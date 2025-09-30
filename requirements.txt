@@ -1,4 +1,4 @@
-pyrogram==2.0.80
+https://github.com/KurimuzonAkuma/pyrogram/archive/v2.1.33.zip
 tgcrypto
 Flask==2.1.1
 gunicorn==20.1.0
