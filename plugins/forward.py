@@ -172,9 +172,17 @@ async def forward_files(lst_msg_id, chat, msg, bot, user_id):
             if not media:
                 unsupported += 1
                 continue
-            elif media.mime_type not in ['video/mp4', 'video/x-matroska']:  # Non mp4 and mkv files types skipping
-                unsupported += 1
+                    if media.mime_type not in [
+                        'image/jpeg',    # .jpg, .jpeg
+                        'image/png',     # .png
+                        'video/x-matroska', # .mkv
+                        'video/quicktime',  # .mov
+                        'video/mp4',        # .mp4
+                        'video/mp2t'        # .ts
+                    ]:
+                        unsupported += 1
                 continue
+
             try:
                 await bot.send_cached_media(
                     chat_id=CHANNEL.get(user_id),
