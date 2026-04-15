@@ -1,54 +1,97 @@
-## Simple telegram forward bot!
-ɪ ᴄᴀɴ ᴏɴʟʏ ғᴏʀᴡᴀʀᴅ ᴅᴏᴄᴜᴍᴇɴᴛ ᴀɴᴅ ᴠɪᴅᴇᴏ (ᴍᴘ𝟺 ᴀɴᴅ ᴍᴋᴠ) ғɪʟᴇs. 
-ғᴏʀᴡᴀʀᴅ ʏᴏᴜʀ sᴏᴜʀᴄᴇ ᴄʜᴀɴɴᴇʟ ᴍᴇssᴀɢᴇ ᴛᴏ ᴛʜɪs ʙᴏᴛ. ɪғ sᴏᴜʀᴄᴇ ᴄʜᴀɴɴᴇʟ ɪs ғᴏʀᴡᴀʀᴅ ʀᴇsᴛʀɪᴄᴛᴇᴅ ʟᴀsᴛ ᴍᴇssᴀɢᴇ ʟɪɴᴋ sᴇɴᴅ ᴛᴏ ᴛʜɪs ʙᴏᴛ.
+## 🤖 Simple Telegram Forward Bot
 
-### Installation
+I can forward documents, videos, photos, and animations (GIFs).
+Forward your source channel message to this bot. If the source channel is forward-restricted, send the last message link to this bot.
+
+### ✨ Features
+
+- 📤 Forward documents, videos, photos, and GIFs
+- 🎬 Support for all video formats (MP4, MKV, AVI, MOV, etc.)
+- 🖼️ Support for all image formats (JPG, PNG, WEBP, etc.)
+- ⚙️ Customizable file captions
+- ⏭️ Skip messages option
+- 📊 Real-time progress tracking with percentage
+- 🛑 Cancel forwarding anytime
+- 📱 Clean and modern UI with buttons
+- ⚡ Lightweight and fast
+
+### 📋 Installation
 #### Deploy on Heroku
 **BEFORE YOU DEPLOY ON HEROKU, YOU SHOULD FORK THE REPO AND CHANGE ITS NAME TO ANYTHING ELSE**<br>
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/pandaznetwork/ForwardBot/)</br>
 
-### Commands
+### 🚀 Commands
 
+**Basic Commands:**
 ```
-/start - To check bot is alive or not
-/id - Get ID od group or channel
-/skip - Set skip number of message.
-/set - Set target channel.
-/caption - Set file caption.
+/start - Start the bot and see welcome message
+/help - Show help message with all commands
+/id - Get Chat/User ID
 ```
 
-### Variables
+**Configuration Commands:**
+```
+/set <channel_id> - Set target channel for forwarding
+/skip <number> - Set number of messages to skip
+/caption <text> - Set custom file caption
+```
 
-* `API_HASH` Your API Hash from my.telegram.org
-* `APP_ID` Your API ID from my.telegram.org
-* `TG_BOT_TOKEN` Your bot token from @BotFather
-* `OWNER_ID` Must enter Your Telegram Id from @my_id_bot
-* `FILE_CAPTION` Must enter in format [Default: <code>{file_name}</code>]
-* `PRIVATE_BOT` Must enter Your Telegram Id 
-* `UPDATES_CHANNEL` Must enter Your Updates Channel Telegram Link
-* `SUPPORT_GROUP` Must enter Your Support Group Telegram Link
-* `DEV_LINK` Must enter Your Contact Bot Telegram Link
+**Utility Commands:**
+```
+/settings - View current configuration
+/reset - Clear all your settings
+/status - Check if forwarding is active
+```
 
-#### CUSTOM_CAPTION
+### 💡 How to Use
 
-* `{file_name}` - file name of the Document
-* `{file_size}` - file size of the Document
-* `{caption}` - default file caption
+1. **Set Target Channel:** Use `/set <channel_id>` to set where files will be forwarded
+2. **Forward Files:** Forward a message from source channel OR send the last message link
+3. **Confirm:** Click "Yes, Forward" to start forwarding
+4. **Monitor:** Watch real-time progress with percentage and statistics
+5. **Cancel:** Click "Cancel" button anytime to stop forwarding
+
+### 🔧 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `API_ID` | Your API ID from my.telegram.org | Required |
+| `API_HASH` | Your API Hash from my.telegram.org | Required |
+| `BOT_TOKEN` | Your bot token from @BotFather | Required |
+| `OWNER` | Your Telegram ID | Required |
+| `FILE_CAPTION` | Default file caption format | `{file_name}` |
+| `PRIVATE_BOT` | Set to True for private bot | False |
+| `UPDATES_CHANNEL` | Updates channel link | - |
+| `SUPPORT_GROUP` | Support group link | - |
+| `DEV_LINK` | Developer contact link | - |
+
+### 📝 Caption Variables
+
+Use these variables in your custom caption:
+
+| Variable | Description |
+|----------|-------------|
+| `{file_name}` | Original file name |
+| `{file_size}` | File size (formatted) |
+| `{caption}` | Original file caption |
+
+**Example:** `/caption {file_name} - {file_size} - My Channel`
 
 
-### Credits
+### 🙏 Credits
 
-- Thanks To Dan For His Awsome [Library](https://github.com/pyrogram/pyrogram)
-- Our Support Group Members
+- Thanks to [Dan](https://github.com/pyrogram/pyrogram) for the awesome Pyrogram library
+- All contributors and support group members
 
-### Licence
-[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)  
+### 📄 License
 
-You can use, study share and improve it at your will. Specifically you can redistribute and/or modify it under the terms of the
+[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
+
+You can use, study, share and improve it at your will. Specifically you can redistribute and/or modify it under the terms of the
 [GNU General Public License](https://www.gnu.org/licenses/gpl.html) as
 published by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version. 
+(at your option) any later version.
 
-##
+---
 
-   **Star this Repo if you Liked it ⭐⭐⭐**
+⭐ **Star this repo if you liked it!**

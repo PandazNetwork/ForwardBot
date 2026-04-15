@@ -1,11 +1,14 @@
 import logging
+from datetime import datetime
 
 from pyrogram import Client, __version__
 from pyrogram.raw.all import layer
+from pyrogram.types import BotCommand
 from info import API_ID, API_HASH, BOT_TOKEN
 from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
 from info import OWNER
+from script import BOT_RESTARTED
 
 class Bot(Client):
     def __init__(self):
@@ -23,11 +26,45 @@ class Bot(Client):
     async def start(self):
         await super().start()
         me = await self.get_me()
-        logging.info(f"@{me.username} Is Started!")
+        restart_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Log restart with timestamp
+        logging.info(f"🤖 @{me.username} Started at {restart_time}!")
+        
+        # Set bot commands
+        commands = [
+            BotCommand("start", "Start the bot"),
+            BotCommand("help", "Show help message"),
+            BotCommand("id", "Get Chat/User ID"),
+            BotCommand("set", "Set target channel"),
+            BotCommand("skip", "Set messages to skip"),
+            BotCommand("caption", "Set custom caption"),
+            BotCommand("settings", "View configuration"),
+            BotCommand("reset", "Clear all settings"),
+            BotCommand("status", "Check forwarding status")
+        ]
         try:
-            await self.send_message(OWNER, "Bot Restarted!")
-        except:
-            pass
+            await self.set_bot_commands(commands)
+            logging.info("✅ Bot commands set successfully!")
+        except Exception as e:
+            logging.error(f"❌ Failed to set bot commands: {e}")
+        
+        # Send detailed restart notification to owner
+        restart_msg = f"""{BOT_RESTARTED}
+
+📊 **Bot Details:**
+🤖 **Bot Username:** @{me.username}
+🆔 **Bot ID:** `{me.id}`
+👤 **First Name:** {me.first_name}
+📅 **Restart Time:** `{restart_time}`
+📚 **Pyrogram Version:** `{__version__}`
+🔧 **Layer:** `{layer}`"""
+        
+        try:
+            await self.send_message(OWNER, restart_msg)
+            logging.info(f"✅ Restart notification sent to owner: {OWNER}")
+        except Exception as e:
+            logging.error(f"❌ Failed to send restart notification: {e}")
 
     async def stop(self, *args):
         await super().stop()
