@@ -5,6 +5,20 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from info import FILE_CAPTION
+from script import (
+    FORWARD_CONFIRMATION, FORWARD_STARTING, FORWARD_CANCELLING,
+    FORWARD_CANCELLED, FORWARD_COMPLETED, FORWARD_FAILED,
+    FORWARD_PROCESSING, BUTTON_YES_FORWARD, BUTTON_SETTINGS,
+    BUTTON_CLOSE, BUTTON_CANCEL, BUTTON_RESET_ALL,
+    SKIP_SET_SUCCESS, SKIP_MISSING_NUMBER, SKIP_INVALID_NUMBER,
+    SKIP_NEGATIVE_NUMBER, TARGET_SET_SUCCESS, TARGET_MISSING_ID,
+    TARGET_INVALID_ID, TARGET_NOT_CHANNEL, TARGET_NOT_ADMIN,
+    CAPTION_SET_SUCCESS, CAPTION_MISSING_TEXT, ERROR_INVALID_LINK,
+    ERROR_GET_CHAT, ERROR_ONLY_CHANNELS, ERROR_TARGET_NOT_SET,
+    ERROR_WAIT_PROCESS, ERROR_CLOSED, SETTINGS_TEXT,
+    SETTINGS_RESET_SUCCESS, SETTINGS_RESET_ALERT, STATUS_FORWARDING,
+    STATUS_IDLE
+)
 logger = logging.getLogger(__name__)
 
 CURRENT = {}
@@ -18,22 +32,22 @@ async def forward(bot, query):
     _, ident, chat, lst_msg_id = query.data.split("#")
     if ident == 'yes':
         if FORWARDING.get(query.from_user.id):
-            return await query.answer('Wait until previous process complete.', show_alert=True)
+            return await query.answer(ERROR_WAIT_PROCESS, show_alert=True)
 
         msg = query.message
-        await msg.edit('Starting Forwarding...')
+        await msg.edit(FORWARD_STARTING)
         try:
             chat = int(chat)
         except:
-            chat = chat
+            pass
         await forward_files(int(lst_msg_id), chat, msg, bot, query.from_user.id)
 
     elif ident == 'close':
-        await query.answer("Okay!")
+        await query.answer(ERROR_CLOSED)
         await query.message.delete()
 
     elif ident == 'cancel':
-        await query.message.edit("Trying to cancel forwarding...")
+        await query.message.edit(FORWARD_CANCELLING)
         CANCEL[query.from_user.id] = True
 
 
@@ -43,7 +57,7 @@ async def send_for_forward(bot, message):
         regex = re.compile("(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?(\d+|[a-zA-Z_0-9]+)/(\d+)$")
         match = regex.match(message.text)
         if not match:
-            return await message.reply('Invalid link for forward!')
+            return await message.reply(ERROR_INVALID_LINK)
         chat_id = match.group(4)
         last_msg_id = int(match.group(5))
         if chat_id.isnumeric():
@@ -57,73 +71,77 @@ async def send_for_forward(bot, message):
     try:
         source_chat = await bot.get_chat(chat_id)
     except Exception as e:
-        return await message.reply(f'Error - {e}')
+        return await message.reply(ERROR_GET_CHAT.format(error=e))
 
     if source_chat.type != enums.ChatType.CHANNEL:
-        return await message.reply("I can forward only channels.")
+        return await message.reply(ERROR_ONLY_CHANNELS)
 
     target_chat_id = CHANNEL.get(message.from_user.id)
     if not target_chat_id:
-        return await message.reply("You not added target channel.\nAdd using /set_channel command.")
+        return await message.reply(ERROR_TARGET_NOT_SET)
 
     try:
         target_chat = await bot.get_chat(target_chat_id)
     except Exception as e:
-        return await message.reply(f'Error - {e}')
+        return await message.reply(ERROR_GET_CHAT.format(error=e))
 
-    skip = CURRENT.get(message.from_user.id)
-    if skip:
-        skip = skip
-    else:
-        skip = 0
-
-    caption = CAPTION.get(message.from_user.id)
-    if caption:
-        caption = caption
-    else:
-        caption = FILE_CAPTION
-    # last_msg_id is same to total messages
+    skip = CURRENT.get(message.from_user.id, 0)
+    caption = CAPTION.get(message.from_user.id, FILE_CAPTION)
+    
+    caption_display = f"`{caption[:50]}...`" if len(str(caption)) > 50 else f"`{caption}`"
     buttons = [[
-        InlineKeyboardButton('YES', callback_data=f'forward#yes#{chat_id}#{last_msg_id}')
+        InlineKeyboardButton(BUTTON_YES_FORWARD, callback_data=f'forward#yes#{chat_id}#{last_msg_id}'),
+        InlineKeyboardButton(BUTTON_SETTINGS, callback_data='settings')
     ],[
-        InlineKeyboardButton('CLOSE', callback_data=f'forward#close#{chat_id}#{last_msg_id}')
+        InlineKeyboardButton(BUTTON_CLOSE, callback_data=f'forward#close#{chat_id}#{last_msg_id}')
     ]]
-    await message.reply(f"Source Channel: {source_chat.title}\nTarget Channel: {target_chat.title}\nSkip messages: <code>{skip}</code>\nTotal Messages: <code>{last_msg_id}</code>\nFile Caption: {caption}\n\nDo you want to forward?", reply_markup=InlineKeyboardMarkup(buttons))
+    
+    confirm_text = FORWARD_CONFIRMATION.format(
+        source=source_chat.title,
+        target=target_chat.title,
+        skip=skip,
+        total=last_msg_id,
+        caption=caption_display
+    )
+    
+    await message.reply(confirm_text, reply_markup=InlineKeyboardMarkup(buttons))
 
 
 @Client.on_message(filters.private & filters.command(['skip']))
 async def set_skip_number(bot, message):
     try:
-        _, skip = message.text.split(" ")
+        _, skip = message.text.split(" ", 1)
     except:
-        return await message.reply("Give me a skip number.")
+        return await message.reply(SKIP_MISSING_NUMBER)
     try:
         skip = int(skip)
+        if skip < 0:
+            return await message.reply(SKIP_NEGATIVE_NUMBER)
     except:
-        return await message.reply("Only support in numbers.")
-    CURRENT[message.from_user.id] = int(skip)
-    await message.reply(f"Successfully set <code>{skip}</code> skip number.")
+        return await message.reply(SKIP_INVALID_NUMBER)
+    CURRENT[message.from_user.id] = skip
+    await message.reply(SKIP_SET_SUCCESS.format(skip=skip))
 
 
 @Client.on_message(filters.private & filters.command(['set']))
 async def set_target_channel(bot, message):
     try:
-        _, chat_id = message.text.split(" ")
+        _, chat_id = message.text.split(" ", 1)
     except:
-        return await message.reply("Give me a target channel ID")
+        return await message.reply(TARGET_MISSING_ID)
     try:
         chat_id = int(chat_id)
     except:
-        return await message.reply("Give me a valid ID")
+        return await message.reply(TARGET_INVALID_ID)
 
     try:
         chat = await bot.get_chat(chat_id)
-    except:
-        return await message.reply("Make me a admin in your target channel.")
+    except Exception as e:
+        return await message.reply(TARGET_NOT_ADMIN.format(error=e))
     if chat.type != enums.ChatType.CHANNEL:
-        return await message.reply("I can set channels only.")
+        return await message.reply(TARGET_NOT_CHANNEL)
     CHANNEL[message.from_user.id] = int(chat.id)
-    await message.reply(f"Successfully set {chat.title} target channel.")
+    await message.reply(TARGET_SET_SUCCESS.format(title=chat.title))
 
 
 @Client.on_message(filters.private & filters.command(['caption']))
@@ -131,78 +149,138 @@ async def set_caption(bot, message):
     try:
         caption = message.text.split(" ", 1)[1]
     except:
-        return await message.reply("Give me a caption.")
+        return await message.reply(CAPTION_MISSING_TEXT)
     CAPTION[message.from_user.id] = caption
-    await message.reply(f"Successfully set file caption.\n\n{caption}")
+    await message.reply(CAPTION_SET_SUCCESS.format(caption=caption))
+
+
+@Client.on_message(filters.private & filters.command(['settings']))
+async def show_settings(bot, message):
+    user_id = message.from_user.id
+    target = CHANNEL.get(user_id, "Not set")
+    skip = CURRENT.get(user_id, 0)
+    caption = CAPTION.get(user_id, "Default")
+    
+    caption_display = f"`{caption[:50]}...`" if len(str(caption)) > 50 else f"`{caption}`"
+    settings_text = SETTINGS_TEXT.format(target=target, skip=skip, caption=caption_display)
+    
+    btn = [[
+        InlineKeyboardButton(BUTTON_RESET_ALL, callback_data='reset_settings')
+    ]]
+    await message.reply(settings_text, reply_markup=InlineKeyboardMarkup(btn))
+
+
+@Client.on_message(filters.private & filters.command(['reset']))
+async def reset_settings(bot, message):
+    user_id = message.from_user.id
+    CHANNEL.pop(user_id, None)
+    CURRENT.pop(user_id, None)
+    CAPTION.pop(user_id, None)
+    await message.reply(SETTINGS_RESET_SUCCESS)
+
+
+@Client.on_message(filters.private & filters.command(['status']))
+async def show_status(bot, message):
+    user_id = message.from_user.id
+    is_forwarding = FORWARDING.get(user_id, False)
+    
+    status_text = STATUS_FORWARDING if is_forwarding else STATUS_IDLE
+    
+    await message.reply(status_text)
     
     
     
 async def forward_files(lst_msg_id, chat, msg, bot, user_id):
-    current = CURRENT.get(user_id) if CURRENT.get(user_id) else 0
+    current = CURRENT.get(user_id, 0)
     forwarded = 0
     deleted = 0
     unsupported = 0
     fetched = 0
     CANCEL[user_id] = False
     FORWARDING[user_id] = True
-    # lst_msg_id is same to total messages
 
     try:
-        async for message in bot.iter_messages(chat, lst_msg_id, CURRENT.get(user_id) if CURRENT.get(user_id) else 0):
+        async for message in bot.iter_messages(chat, lst_msg_id, CURRENT.get(user_id, 0)):
             if CANCEL.get(user_id):
-                await msg.edit(f"Successfully Forward Canceled!")
+                await msg.edit(FORWARD_CANCELLED)
                 break
             current += 1
             fetched += 1
             if current % 20 == 0:
+                percentage = round((current / lst_msg_id) * 100, 1)
                 btn = [[
-                    InlineKeyboardButton('CANCEL', callback_data=f'forward#cancel#{chat}#{lst_msg_id}')
+                    InlineKeyboardButton(BUTTON_CANCEL, callback_data=f'forward#cancel#{chat}#{lst_msg_id}')
                 ]]
-                await msg.edit_text(text=f"Forward Processing...\n\nTotal Messages: <code>{lst_msg_id}</code>\nCompleted Messages: <code>{current} / {lst_msg_id}</code>\nForwarded Files: <code>{forwarded}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nUnsupported Files Skipped: <code>{unsupported}</code>", reply_markup=InlineKeyboardMarkup(btn))
+                progress_text = FORWARD_PROCESSING.format(
+                    percentage=percentage,
+                    total=lst_msg_id,
+                    completed=current,
+                    forwarded=forwarded,
+                    deleted=deleted,
+                    unsupported=unsupported
+                )
+                await msg.edit_text(text=progress_text, reply_markup=InlineKeyboardMarkup(btn))
             if message.empty:
                 deleted += 1
                 continue
             elif not message.media:
                 unsupported += 1
                 continue
-            elif message.media not in [enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.VIDEO]:  # Non documents and videos files skipping
+            elif message.media not in [enums.MessageMediaType.DOCUMENT, enums.MessageMediaType.VIDEO, enums.MessageMediaType.PHOTO, enums.MessageMediaType.ANIMATION]:
                 unsupported += 1
                 continue
             media = getattr(message, message.media.value, None)
             if not media:
                 unsupported += 1
                 continue
-                    if media.mime_type not in [
-                        'image/jpeg',    # .jpg, .jpeg
-                        'image/png',     # .png
-                        'video/x-matroska', # .mkv
-                        'video/quicktime',  # .mov
-                        'video/mp4',        # .mp4
-                        'video/mp2t'        # .ts
-                    ]:
-                        unsupported += 1
+            # Allow all image formats, all video formats, and documents
+            if message.media == enums.MessageMediaType.PHOTO:
+                # All photos are allowed
+                pass
+            elif message.media == enums.MessageMediaType.ANIMATION:
+                # All GIFs/animations are allowed
+                pass
+            elif message.media == enums.MessageMediaType.VIDEO:
+                # All video formats are allowed
+                pass
+            elif message.media == enums.MessageMediaType.DOCUMENT:
+                # All documents are allowed
+                pass
+            else:
+                unsupported += 1
                 continue
-
             try:
+                caption_text = CAPTION.get(user_id).format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption) if CAPTION.get(user_id) else FILE_CAPTION.format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption)
                 await bot.send_cached_media(
                     chat_id=CHANNEL.get(user_id),
                     file_id=media.file_id,
-                    caption=CAPTION.get(user_id).format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption) if CAPTION.get(user_id) else FILE_CAPTION.format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption)
+                    caption=caption_text
                 )
             except FloodWait as e:
-                await asyncio.sleep(e.value)  # Wait "value" seconds before continuing
+                await asyncio.sleep(e.value)
+                caption_text = CAPTION.get(user_id).format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption) if CAPTION.get(user_id) else FILE_CAPTION.format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption)
                 await bot.send_cached_media(
                     chat_id=CHANNEL.get(user_id),
                     file_id=media.file_id,
-                    caption=CAPTION.get(user_id).format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption) if CAPTION.get(user_id) else FILE_CAPTION.format(file_name=media.file_name, file_size=get_size(media.file_size), caption=message.caption)
+                    caption=caption_text
                 )
             forwarded += 1
             await asyncio.sleep(1)
     except Exception as e:
         logger.exception(e)
-        await msg.reply(f"Forward Canceled!\n\nError - {e}")
+        await msg.reply(FORWARD_FAILED.format(error=e))
     else:
-        await msg.edit(f'Forward Completed!\n\nTotal Messages: <code>{lst_msg_id}</code>\nCompleted Messages: <code>{current} / {lst_msg_id}</code>\nFetched Messages: <code>{fetched}</code>\nTotal Forwarded Files: <code>{forwarded}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nUnsupported Files Skipped: <code>{unsupported}</code>')
+        percentage = 100.0
+        complete_text = FORWARD_COMPLETED.format(
+            percentage=percentage,
+            total=lst_msg_id,
+            completed=current,
+            fetched=fetched,
+            forwarded=forwarded,
+            deleted=deleted,
+            unsupported=unsupported
+        )
+        await msg.edit(complete_text)
         FORWARDING[user_id] = False
 
 
